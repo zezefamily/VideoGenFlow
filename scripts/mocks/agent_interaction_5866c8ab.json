@@ -1,0 +1,8 @@
+{
+  "source_conversation_id": "5866c8ab-d142-4409-acc4-4b3e51d4aa77",
+  "purpose": "Agent 交互、做同款和分镜差异化的本地调试样本",
+  "share_link": "https://v.douyin.com/RH0HfIWptz0/",
+  "core_theme": "情绪失控会放大最初的小错误；成熟是及时止损",
+  "expected_flow": ["video_analysis", "rewrite_confirmation", "script", "storyboard_confirmation", "images", "audio", "video"],
+  "regressions": ["仿写不得切换为无关心理学主题", "相邻分镜不得重复主体、构图或视觉隐喻", "成片字幕为亮黄字和黑描边"]
+}
