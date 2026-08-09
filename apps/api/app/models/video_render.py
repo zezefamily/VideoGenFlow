@@ -35,6 +35,7 @@ class VideoRender(Base, TimestampMixin):
     stage: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
 
     aspect_ratio: Mapped[str] = mapped_column(String(16), default="16:9")
+    render_mode: Mapped[str] = mapped_column(String(16), default="image")  # image | video
 
     # 本地静态路径 /api/video/{id}.mp4
     video_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)

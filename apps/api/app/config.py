@@ -34,6 +34,10 @@ class Settings:
     # ---- 火山引擎 ARK(图片生成)----
     ark_api_key: str = _get("ARK_API_KEY", "")
     ark_image_model: str = _get("ARK_IMAGE_MODEL", "doubao-seedream-5-0-260128")
+    ark_video_model: str = _get("ARK_VIDEO_MODEL", "doubao-seedance-2-0-mini-260615")
+    ark_video_resolution: str = _get("ARK_VIDEO_RESOLUTION", "480p")
+    # Seedance 按生成视频时长计费；仅用于提交前预算展示，不参与方舟实际扣费。
+    ark_video_cost_per_second: float = float(_get("ARK_VIDEO_COST_PER_SECOND", "0.25"))
     ark_base_url: str = _get(
         "ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3"
     )
@@ -103,6 +107,7 @@ class Settings:
     images_dir: Path = DATA_DIR / "images"
     audio_dir: Path = DATA_DIR / "audio"
     video_dir: Path = DATA_DIR / "videos"
+    shot_video_dir: Path = DATA_DIR / "shot_videos"
     # 本地背景音乐库:合成时自动选择按文件名排序后的第一首，未放音乐则仅保留口播。
     bg_music_dir: Path = _PROJECT_ROOT / "bg_music"
     s3_endpoint: str = _get("S3_ENDPOINT", "")

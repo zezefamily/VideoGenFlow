@@ -246,12 +246,25 @@ export interface VideoRender {
   status: "pending" | "generating" | "done" | "error" | "cancelled";
   stage: string | null; // align | ffmpeg
   aspect_ratio: string;
+  render_mode: "image" | "video";
   video_url: string | null;
   duration_sec: number | null;
   error: string | null;
   has_active: boolean;
   created_at: string | null;
   updated_at: string | null;
+}
+
+export interface ShotVideoAsset {
+  id: string; storyboard_version_id: string; storyboard_image_id: string; shot_index: number;
+  status: "pending" | "generating" | "done" | "error"; strategy: "smart" | "all" | "custom";
+  video_prompt: string; model: string; resolution: string; duration_sec: number;
+  estimated_cost: number; task_id: string | null; video_url: string | null; local_path: string | null; error: string | null;
+}
+
+export interface ShotVideoList {
+  strategy: "smart" | "all" | "custom" | null; selected_shots: number[]; estimated_cost: number;
+  assets: ShotVideoAsset[]; has_active: boolean;
 }
 
 // generateTTS 请求体(全可选,缺省用后端默认音色)

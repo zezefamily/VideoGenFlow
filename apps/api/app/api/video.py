@@ -12,7 +12,7 @@ from app.db import get_session
 from app.deps import get_current_user, get_owned_conversation
 from app.models import Conversation, User
 from app.repositories import conversation_repo, project_repo, video_render_repo
-from app.schemas.video import VideoRenderOut
+from app.schemas.video import VideoRenderIn, VideoRenderOut
 from app.services import video_render_service
 
 router = APIRouter(prefix="/api/conversations", tags=["video"])
@@ -21,6 +21,7 @@ regen_router = APIRouter(prefix="/api/video-renders", tags=["video"])
 
 @router.post("/{conv_id}/video/render", response_model=VideoRenderOut)
 async def render_video(
+    body: VideoRenderIn,
     conv: Conversation = Depends(get_owned_conversation),
     s: AsyncSession = Depends(get_session),
 ):
@@ -30,7 +31,7 @@ async def render_video(
         raise HTTPException(status_code=400, detail="当前没有作品,请先创作脚本")
     try:
         artifact = await video_render_service.start_render(
-            conversation_id=conv.id, project_id=project.id
+            conversation_id=conv.id, project_id=project.id, render_mode=body.render_mode
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

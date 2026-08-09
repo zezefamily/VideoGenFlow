@@ -85,6 +85,7 @@ def to_artifact_dict(render: VideoRender) -> dict:
         "status": render.status,
         "stage": render.stage,
         "aspect_ratio": render.aspect_ratio,
+        "render_mode": render.render_mode,
         "video_url": render.video_url,
         "duration_sec": render.duration_sec,
         "error": render.error,

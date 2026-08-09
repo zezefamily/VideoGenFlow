@@ -12,6 +12,7 @@ from app.models.storyboard_image import StoryboardImage
 from app.models.video_analysis import VideoAnalysis
 from app.models.audio_track import AudioTrack
 from app.models.video_render import VideoRender
+from app.models.shot_video_asset import ShotVideoAsset
 from app.models.generation_log import GenerationLog
 
 __all__ = [
@@ -29,5 +30,6 @@ __all__ = [
     "VideoAnalysis",
     "AudioTrack",
     "VideoRender",
+    "ShotVideoAsset",
     "GenerationLog",
 ]

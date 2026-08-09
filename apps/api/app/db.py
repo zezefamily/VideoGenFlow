@@ -44,6 +44,7 @@ def _ensure_columns(conn) -> None:
     # Phase 5 多租户
     add_if_missing("conversations", "owner_id", "VARCHAR(36)")
     add_if_missing("audio_tracks", "provider", "VARCHAR(32) DEFAULT 'dubbingx'")
+    add_if_missing("video_renders", "render_mode", "VARCHAR(16) DEFAULT 'image'")
 
 
 async def _seed_default_user() -> str:

@@ -30,6 +30,8 @@ from app.api import video_analysis as video_analysis_router
 from app.api import styles as styles_router
 from app.api import tts as tts_router
 from app.api import video as video_router
+from app.api import shot_videos as shot_videos_router
+from app.services import shot_video_service
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,6 +52,9 @@ async def lifespan(app: FastAPI):
             dsn=settings.sentry_dsn,
             traces_sample_rate=0.1,
         )
+
+    # 恢复因开发热重载或服务重启而中断的 Seedance 轮询任务。
+    await shot_video_service.resume_active()
 
     # 检查点 saver:Postgres 或 SQLite(双模式)
     if settings.is_postgres:
@@ -103,6 +108,7 @@ app.include_router(tts_router.voices_router)
 app.include_router(tts_router.regen_router)
 app.include_router(video_router.router)
 app.include_router(video_router.regen_router)
+app.include_router(shot_videos_router.router)
 app.include_router(video_analysis_router.router)
 app.include_router(video_analysis_router.detail_router)
 app.include_router(usage_router.router)
@@ -121,3 +127,6 @@ app.mount("/api/audio", StaticFiles(directory=str(settings.audio_dir)), name="au
 # ffmpeg 合成产物落地本地盘,经此静态服务播放/下载。
 settings.video_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/api/video", StaticFiles(directory=str(settings.video_dir)), name="video")
+
+settings.shot_video_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/api/shot-video", StaticFiles(directory=str(settings.shot_video_dir)), name="shot-video")

@@ -12,6 +12,7 @@ VideoGenFlow 是一个面向短视频创作的对话式 Creative Agent。用户�
 - 双 TTS 供应商：支持 DubbingX 和豆包语音，可在设置中选择供应商。
 - 字幕时间轴：使用火山引擎 ATA 获取逐句、逐词时间戳。
 - 自动成片：使用 ffmpeg 拼接分镜、配音、黄色描边字幕和背景音乐。
+- 可选视频成片：使用 Seedance 2.0 mini 将选中的分镜图生成 480p 无声视频，再与静态镜头混合合成。
 - 上下文素材规划：重新合成前检查当前及历史产物，按兼容性决定复用、确认或重新生成。
 - 流式交互：通过 SSE 展示 Agent 回复、节点进度和后台任务状态，切换会话后可恢复。
 - 开发/生产双模式：SQLite/PostgreSQL、本地存储/S3、进程内任务/Redis + Arq。
@@ -123,6 +124,9 @@ DEEPSEEK_MODEL=deepseek-v4-flash
 ```dotenv
 ARK_API_KEY=your-key
 ARK_IMAGE_MODEL=doubao-seedream-5-0-260128
+ARK_VIDEO_MODEL=doubao-seedance-2-0-mini-260615
+ARK_VIDEO_RESOLUTION=480p
+ARK_VIDEO_COST_PER_SECOND=0.25
 ```
 
 使用豆包语音时配置：
@@ -193,6 +197,15 @@ npm run dev
 - 被新脚本删除的旧镜头会被压缩跳过，避免后续画面累计偏移。
 
 调整 TTS 语速不能修复版本错位；脚本、分镜、图片和音轨的依赖关系必须先正确。
+
+## 视频成片模式
+
+素材齐备后可选择：
+
+- 图片成片：保持现有静态分镜合成，不产生视频生成费用。
+- 视频成片：使用分镜图作为首帧、现有 `video_prompt` 作为提示词，通过 Seedance 2.0 mini 生成 480p 无声视频。
+
+视频成片支持三种策略：智能生成、全部生成、自定义镜头。智能模式固定选择首镜和尾镜，并根据动作、运镜和镜头间隔选择约三分之一镜头。界面会按各分镜生成时长之和 × `ARK_VIDEO_COST_PER_SECOND` 展示预算，只有用户确认后才提交付费任务。已经成功且提示词未变化的镜头视频会复用；失败镜头在最终合成时自动回退为图片。
 
 ## 背景音乐与字幕
 

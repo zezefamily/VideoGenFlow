@@ -21,6 +21,7 @@ import type {
   VideoAnalysis,
   VideoAnalysisLatest,
   VideoRender,
+  ShotVideoList,
   VoiceList,
 } from "./types";
 import { clearSession, getToken, type AuthUser } from "./auth";
@@ -197,10 +198,15 @@ export const api = {
   getVideo: (convId: string) =>
     req<VideoRender | null>(`/api/conversations/${convId}/video`),
 
-  renderVideo: (convId: string) =>
+  renderVideo: (convId: string, renderMode: "image" | "video" = "image") =>
     req<VideoRender>(`/api/conversations/${convId}/video/render`, {
       method: "POST",
+      body: JSON.stringify({ render_mode: renderMode }),
     }),
+
+  getShotVideos: (convId: string) => req<ShotVideoList>(`/api/conversations/${convId}/shot-videos`),
+  planShotVideos: (convId: string, strategy: "smart" | "all" | "custom", shot_indices: number[] = []) => req<{strategy:string;selected_shots:number[];estimated_cost:number}>(`/api/conversations/${convId}/shot-videos/plan`, { method: "POST", body: JSON.stringify({strategy, shot_indices}) }),
+  generateShotVideos: (convId: string, strategy: "smart" | "all" | "custom", shot_indices: number[] = []) => req<ShotVideoList>(`/api/conversations/${convId}/shot-videos/generate`, { method: "POST", body: JSON.stringify({strategy, shot_indices, confirmed:true}) }),
 
   cancelVideo: (convId: string) =>
     req<{ cancelled: number; renders: string[] }>(

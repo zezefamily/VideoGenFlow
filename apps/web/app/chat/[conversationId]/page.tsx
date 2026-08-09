@@ -80,6 +80,10 @@ export default function ChatPage({
     enabled: !!user,
     refetchInterval: (q) => (q.state.data?.has_active ? 3000 : false),
   });
+  const { data: shotVideos } = useQuery({
+    queryKey: ["shot-videos", convId], queryFn: () => api.getShotVideos(convId), enabled: !!user,
+    refetchInterval: (q) => q.state.data?.has_active ? 5000 : false,
+  });
   const { data: imageList } = useQuery({
     queryKey: ["images", convId],
     queryFn: () => api.getImages(convId),
@@ -217,6 +221,7 @@ export default function ChatPage({
           qc.invalidateQueries({ queryKey: ["video-analysis", convId] });
           qc.invalidateQueries({ queryKey: ["audio-track", convId] });
           qc.invalidateQueries({ queryKey: ["video-render", convId] });
+          qc.invalidateQueries({ queryKey: ["shot-videos", convId] });
         },
         onError: (e) => {
           setAgentStatus(null);
@@ -233,6 +238,7 @@ export default function ChatPage({
           qc.invalidateQueries({ queryKey: ["video-analysis", convId] });
           qc.invalidateQueries({ queryKey: ["audio-track", convId] });
           qc.invalidateQueries({ queryKey: ["video-render", convId] });
+          qc.invalidateQueries({ queryKey: ["shot-videos", convId] });
         },
       });
     } catch (e: any) {
@@ -276,6 +282,7 @@ export default function ChatPage({
           activeArtifact={project?.active ?? null}
           activeStoryboard={storyboardDetail?.active ?? null}
           onSend={send}
+          shotVideos={shotVideos ?? null}
           onWelcomeChoose={(text) => {
             setDraft(text);
             requestAnimationFrame(() => composerRef.current?.focus());
@@ -290,6 +297,7 @@ export default function ChatPage({
           images={imageList}
           audio={audioTrack ?? null}
           video={videoRender ?? null}
+          shotVideos={shotVideos ?? null}
           isWorking={streaming.isStreaming || !!activeRun?.run}
           workingLabel={agentStatus || activeRunLabel(activeRun?.run?.current_node)}
           onSend={send}

@@ -17,9 +17,14 @@ class VideoRenderOut(BaseModel):
     status: str
     stage: Optional[str] = None
     aspect_ratio: str = "16:9"
+    render_mode: str = "image"
     video_url: Optional[str] = None
     duration_sec: Optional[float] = None
     error: Optional[str] = None
     has_active: bool = False  # 是否有 pending/generating(前端据此决定是否轮询)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+
+class VideoRenderIn(BaseModel):
+    render_mode: str = "image"

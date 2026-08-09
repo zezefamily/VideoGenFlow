@@ -8,6 +8,7 @@ import type {
   StoryboardArtifact,
   StoryboardImage,
   VideoAnalysis,
+  ShotVideoList,
 } from "@/lib/types";
 import { ScriptCard } from "@/components/artifacts/ScriptCard";
 import { StoryboardCard } from "@/components/artifacts/StoryboardCard";
@@ -15,6 +16,7 @@ import { ImageGallery } from "@/components/artifacts/ImageGallery";
 import { VideoAnalysisCard } from "@/components/artifacts/VideoAnalysisCard";
 import { RunProgress } from "./RunProgress";
 import { WelcomePanel } from "./WelcomePanel";
+import { ShotVideoGallery } from "@/components/artifacts/ShotVideoGallery";
 
 function MessageBubble({
   msg,
@@ -138,6 +140,7 @@ export function MessageList({
   activeStoryboard,
   onSend,
   onWelcomeChoose,
+  shotVideos,
 }: {
   messages: Message[];
   streaming: StreamingState;
@@ -149,6 +152,7 @@ export function MessageList({
   activeStoryboard?: StoryboardArtifact | null;
   onSend?: (text: string) => void;
   onWelcomeChoose?: (text: string) => void;
+  shotVideos?: ShotVideoList | null;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -185,6 +189,14 @@ export function MessageList({
             onWelcomeChoose={onWelcomeChoose}
           />
         ))}
+
+        {shotVideos && shotVideos.assets.length > 0 && (
+          <div className="flex justify-start">
+            <div className="w-full max-w-[86%]">
+              <ShotVideoGallery data={shotVideos} />
+            </div>
+          </div>
+        )}
 
         {streaming.isStreaming && (
           <div className="flex justify-start">

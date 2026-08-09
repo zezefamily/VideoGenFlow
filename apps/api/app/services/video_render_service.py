@@ -25,6 +25,7 @@ from app.db import AsyncSessionLocal
 from app.repositories import (
     audio_track_repo,
     image_repo,
+    shot_video_repo,
     storyboard_repo,
     video_render_repo,
 )
@@ -339,6 +340,7 @@ async def _compose(
     subtitles: list[dict],
     audio_web_path: str,
     aspect_ratio: str,
+    shot_videos: dict[int, object] | None = None,
 ) -> str:
     """合成 mp4:每镜静态段 -> concat -> 口播/低音量 BGM 混音 + 烧字幕。
 
@@ -361,26 +363,43 @@ async def _compose(
 
         # 2. 每镜:静态图 + 对齐时长 -> 段视频(统一分辨率/SAR,便于 concat)
         seg_files: list[str] = []
+        shot_videos = shot_videos or {}
         for i, (img_p, t) in enumerate(zip(img_paths, timings)):
             if render_id in _cancelled:
                 raise _Cancelled
             dur = max((t["end_ms"] - t["start_ms"]) / 1000.0, 0.1)
             seg = os.path.join(tmp, f"seg_{i:03d}.mp4")
-            vf = (
+            base_vf = (
                 f"scale={W}:{H}:force_original_aspect_ratio=decrease,"
-                f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:black,setsar=1"
+                f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:black"
             )
+            dynamic = shot_videos.get(i + 1)
+            dynamic_path = None
+            if dynamic and dynamic.local_path:
+                dynamic_path = str(settings.shot_video_dir / dynamic.local_path.removeprefix("/api/shot-video/")) if dynamic.local_path.startswith("/api/shot-video/") else dynamic.local_path
+            is_dynamic = bool(dynamic_path and os.path.exists(dynamic_path))
+            if is_dynamic:
+                args = ["-stream_loop", "-1", "-i", dynamic_path]
+                vf = f"{base_vf},setsar=1"
+            else:
+                args = ["-loop", "1", "-i", img_p]
+                # 静态镜头增加轻微线性 Ken Burns 缩放；相邻镜头交替推近/拉远。
+                # 步长按镜头实际帧数计算，保证不同镜头时长都在约 8% 幅度内匀速完成。
+                frame_count = max(round(dur * 30), 2)
+                zoom_step = 0.08 / (frame_count - 1)
+                zoom = (
+                    f"min(1.08,1+on*{zoom_step:.8f})"
+                    if i % 2 == 0
+                    else f"max(1,1.08-on*{zoom_step:.8f})"
+                )
+                vf = (
+                    f"{base_vf},"
+                    f"zoompan=z='{zoom}':x='iw/2-(iw/zoom/2)':"
+                    f"y='ih/2-(ih/zoom/2)':d=1:s={W}x{H}:fps=30,setsar=1"
+                )
+            args += ["-t", f"{dur:.3f}", "-an", "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf", vf, "-preset", "fast", seg]
             await _run_ff(
-                [
-                    "-loop", "1", "-i", img_p,
-                    "-t", f"{dur:.3f}",
-                    "-r", "30",
-                    "-c:v", "libx264",
-                    "-pix_fmt", "yuv420p",
-                    "-vf", vf,
-                    "-preset", "fast",
-                    seg,
-                ],
+                args,
                 render_id,
                 f"seg{i}",
             )
@@ -431,7 +450,10 @@ async def _compose(
             ff_args += ["-stream_loop", "-1", "-i", str(bg_music)]
             png_input_offset = 3
         for png in sub_pngs:
-            ff_args += ["-i", png]
+            # 静态 PNG 默认只有一帧。overlay 链较长时，后续字幕输入会在 t=0
+            # 立即 EOF，导致前几句之后不再出现。把每张字幕图循环为持续视频流，
+            # 最终仍由口播音频和 -shortest 控制总时长。
+            ff_args += ["-loop", "1", "-framerate", "30", "-i", png]
         # 字幕输入索引在有 BGM 时后移一位。
         fc_parts: list[str] = []
         prev = "[0:v]"
@@ -520,6 +542,7 @@ async def run_render_task(render_id: str) -> None:
                 if render.storyboard_version_id
                 else []
             )
+            shot_video_rows = await shot_video_repo.list_by_storyboard(s, render.storyboard_version_id) if render.storyboard_version_id and render.render_mode == "video" else []
 
         if audio is None or not audio.audio_url:
             raise ValueError("找不到已完成的配音音频,请先生成配音")
@@ -552,6 +575,7 @@ async def run_render_task(render_id: str) -> None:
             subtitles,
             audio.audio_url,
             render.aspect_ratio,
+            {row.shot_index: row for row in shot_video_rows if row.status == "done"},
         )
 
         duration_sec = sum(t["end_ms"] - t["start_ms"] for t in timings) / 1000.0
@@ -577,7 +601,7 @@ async def _out_dict(render) -> dict:
     return d
 
 
-async def start_render(*, conversation_id: str, project_id: str, allow_stale_storyboard: bool = False) -> dict:
+async def start_render(*, conversation_id: str, project_id: str, allow_stale_storyboard: bool = False, render_mode: str = "image") -> dict:
     """为作品创建 pending 成片(替换旧成片),启动后台合成流水线。
 
     预检:配音音频已完成、分镜已激活、分镜图片齐全。缺失则即时报错给前端。
@@ -635,6 +659,11 @@ async def start_render(*, conversation_id: str, project_id: str, allow_stale_sto
             selected = await storyboard_repo.activate_version(s, selected.id) or selected
 
         aspect = selected.aspect_ratio or "16:9"
+        if render_mode not in {"image", "video"}: raise ValueError("不支持的成片模式")
+        if render_mode == "video":
+            clips = await shot_video_repo.list_by_storyboard(s, selected.id)
+            if not any(row.status == "done" for row in clips):
+                raise ValueError("还没有生成成功的分镜视频，请先选择视频生成策略")
         # 整片重新生成:物理删除旧成片,避免累积
         await video_render_repo.delete_renders_by_project(s, project_id)
         render = await video_render_repo.create_render(
@@ -645,6 +674,7 @@ async def start_render(*, conversation_id: str, project_id: str, allow_stale_sto
             storyboard_version_id=selected.id,
             aspect_ratio=aspect,
             status="pending",
+            render_mode=render_mode,
         )
 
     _cancelled.discard(render.id)
