@@ -2,31 +2,25 @@
 
 VideoGenFlow 是一个面向短视频创作的对话式 Creative Agent。用户可以提交短视频分享链接、一个话题，或现成口播文案，Agent 会在同一会话中完成参考视频分析、口播脚本、分镜、分镜图、配音、字幕打轴和最终成片，并在每个阶段主动确认下一步。
 
-## 成品演示
-
-仓库默认包含两条正式成片，克隆后无需启动后端即可播放。视频文件位于 `demo/videos/`，并随 Git 版本管理。
+## SHOWCASE
 
 ### 一只马蜂，干掉三吨野牛
 
 - 时长：65.568 秒
 - 模式：Seedance 动态镜头与静态分镜混合成片
-- [播放或下载成片](./demo/videos/一只马蜂-干掉三吨野牛.mp4)
+- [下载仓库内高清成片](./demo/videos/一只马蜂-干掉三吨野牛.mp4)
 
-<video controls playsinline preload="metadata" width="720" src="./demo/videos/一只马蜂-干掉三吨野牛.mp4">
-  当前 Markdown 阅读器不支持内嵌视频，请使用上方链接播放。
-</video>
+https://github.com/user-attachments/assets/0a703bec-0625-47a9-b377-9a14a3ab9707
 
 ### 章鱼之死：愤怒如何绞碎你
 
 - 时长：79.296 秒
 - 模式：Seedance 动态镜头与静态分镜混合成片
-- [播放或下载成片](./demo/videos/章鱼之死-愤怒如何绞碎你.mp4)
+- [下载仓库内高清成片](./demo/videos/章鱼之死-愤怒如何绞碎你.mp4)
 
-<video controls playsinline preload="metadata" width="720" src="./demo/videos/章鱼之死-愤怒如何绞碎你.mp4">
-  当前 Markdown 阅读器不支持内嵌视频，请使用上方链接播放。
-</video>
+https://github.com/user-attachments/assets/5bf22571-0311-4b0b-8bd2-798d3a14035a
 
-> 支持 HTML5 `<video>` 的 Markdown 阅读器可直接内嵌播放；若 Git 托管平台不渲染播放器，可点击“播放或下载成片”打开原始 MP4。
+> GitHub 会将上方 Attachment 地址渲染为视频播放器；仓库内同时保留高清 MP4，便于下载和离线播放。
 
 ## 主要能力
 
