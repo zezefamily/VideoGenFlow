@@ -2,6 +2,32 @@
 
 VideoGenFlow 是一个面向短视频创作的对话式 Creative Agent。用户可以提交短视频分享链接、一个话题，或现成口播文案，Agent 会在同一会话中完成参考视频分析、口播脚本、分镜、分镜图、配音、字幕打轴和最终成片，并在每个阶段主动确认下一步。
 
+## 成品演示
+
+仓库默认包含两条正式成片，克隆后无需启动后端即可播放。视频文件位于 `demo/videos/`，并随 Git 版本管理。
+
+### 一只马蜂，干掉三吨野牛
+
+- 时长：65.568 秒
+- 模式：Seedance 动态镜头与静态分镜混合成片
+- [播放或下载成片](./demo/videos/一只马蜂-干掉三吨野牛.mp4)
+
+<video controls playsinline preload="metadata" width="720" src="./demo/videos/一只马蜂-干掉三吨野牛.mp4">
+  当前 Markdown 阅读器不支持内嵌视频，请使用上方链接播放。
+</video>
+
+### 章鱼之死：愤怒如何绞碎你
+
+- 时长：79.296 秒
+- 模式：Seedance 动态镜头与静态分镜混合成片
+- [播放或下载成片](./demo/videos/章鱼之死-愤怒如何绞碎你.mp4)
+
+<video controls playsinline preload="metadata" width="720" src="./demo/videos/章鱼之死-愤怒如何绞碎你.mp4">
+  当前 Markdown 阅读器不支持内嵌视频，请使用上方链接播放。
+</video>
+
+> 支持 HTML5 `<video>` 的 Markdown 阅读器可直接内嵌播放；若 Git 托管平台不渲染播放器，可点击“播放或下载成片”打开原始 MP4。
+
 ## 主要能力
 
 - 对话式创作：支持闲聊，并引导用户回到短视频创作主线。
@@ -75,6 +101,7 @@ VideoGenFlow/
 │   │       └── services/     # 分析、出图、TTS、ATA、成片等服务
 │   └── web/                  # Next.js 对话客户端
 ├── bg_music/                 # 成片背景音乐库
+├── demo/videos/              # 随仓库提供的默认成片演示
 ├── data/                     # SQLite、检查点、图片、音频和视频
 ├── scripts/mocks/            # 交互调试 Mock 数据
 ├── .env.example              # 环境变量模板
